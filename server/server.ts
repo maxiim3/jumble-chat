@@ -1,18 +1,19 @@
 import type { ServerWebSocket } from '../shared/socket.type';
+import { PORT, ROUTES } from '../shared/constants';
 
 // Set pour garder trace de tous les clients connectés
 const clients = new Set<ServerWebSocket<WebSocketData>>();
 
 const server = Bun.serve<WebSocketData>({
-  port: 3200,
+  port: PORT,
 
   // Routes HTTP
   routes: {
     // Health check endpoint
-    '/health': new Response('OK'),
+    [ROUTES.health]: new Response('OK'),
 
     // Upgrade vers WebSocket sur /ws
-    '/ws': (req) => {
+    [ROUTES.ws]: (req) => {
       console.log(req);
       const userId = crypto.randomUUID();
 
