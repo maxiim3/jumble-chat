@@ -1,4 +1,4 @@
-<form class="flex gap-2 items-center w-full p-2" (ngSubmit)="onSubmit()">
+<form class="flex gap-3 items-center w-full p-4" (ngSubmit)="onSubmit()">
   <label for="message-input" class="sr-only">Message</label>
   <input
     id="message-input"
@@ -6,12 +6,12 @@
     [formControl]="messageControl"
     (keydown)="onKeydown($event)"
     placeholder="Type a message..."
-    class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+    class="flex-1 px-4 py-3 bg-slate-50 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all duration-200 placeholder:text-slate-400"
   />
   <button
     type="submit"
     [disabled]="messageControl.invalid"
-    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    class="px-5 py-3 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 font-medium shadow-sm hover:shadow-md"
   >
     Send
   </button>

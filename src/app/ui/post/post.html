@@ -1,18 +1,36 @@
-<article class="w-full p-3 border-slate-100 border">
+<article [class]="containerClass()">
   @switch (message().type) {
     @case ('new_connection') {
-      <span class="text-emerald-600">You joined</span>
+      <span class="flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        You joined the chat
+      </span>
     }
     @case ('user_joined') {
-      <span class="text-emerald-500">{{ message().userId }} joined</span>
+      <span class="flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+        </svg>
+        {{ message().userId }} joined
+      </span>
     }
     @case ('user_left') {
-      <span class="text-amber-500">{{ message().userId }} left</span>
+      <span class="flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        {{ message().userId }} left
+      </span>
     }
     @case ('new_message') {
-      <span [class]="colorClass()">
-        {{ formattedSender() }}: {{ message().message }}
-      </span>
+      <div class="flex flex-col gap-1">
+        @if (!isOwnMessage()) {
+          <span class="text-xs font-medium text-slate-500">{{ formattedSender() }}</span>
+        }
+        <p class="text-sm leading-relaxed break-words">{{ message().message }}</p>
+      </div>
     }
   }
 </article>

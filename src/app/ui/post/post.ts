@@ -18,8 +18,18 @@ export class Post {
   /** Current user ID to identify own messages */
   currentUserId = input<string | undefined>();
 
+  /** Whether this message was sent by the current user */
+  isOwnMessage = computed(() =>
+    this.formatter.isCurrentUser(this.message().userId, this.currentUserId())
+  );
+
   /** CSS class based on message type */
   colorClass = computed(() => this.formatter.getColorClass(this.message().type));
+
+  /** Container class based on message type and ownership */
+  containerClass = computed(() =>
+    this.formatter.getContainerClass(this.message().type, this.isOwnMessage())
+  );
 
   /** Formatted sender name (shows "You" for own messages) */
   formattedSender = computed(() =>
