@@ -14,7 +14,6 @@ const server = Bun.serve<WebSocketData>({
 
     // Upgrade vers WebSocket sur /ws
     [ROUTES.ws]: (req) => {
-      console.log(req);
       const userId = crypto.randomUUID();
 
       const upgraded = server.upgrade(req, {
@@ -50,7 +49,7 @@ const server = Bun.serve<WebSocketData>({
       // TODO(human): Implémenter la logique de traitement des messages
       // Le message peut être du texte ou un Buffer
       // Voir les instructions ci-dessous pour les différents types à gérer
-      console.log(ws, message);
+      console.log(message);
     },
 
     close(ws) {

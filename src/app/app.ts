@@ -1,26 +1,19 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { PORT, ROUTES } from '../../shared/constants';
+// import { RouterOutlet } from '@angular/router';
+import { SocketClientService } from './services/socket-client.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
   protected readonly title = signal('jumble-chat');
+  client = inject(SocketClientService);
 
   constructor() {
-    this.connect();
-  }
-
-  connect() {
-    const ws = new WebSocket(`ws://localhost:${PORT}${ROUTES.ws}`);
-
-    ws.onopen = () => console.log('Connecté');
-    ws.send('coucou');
-    ws.onmessage = (e) => console.log('Message', e);
-    ws.onclose = () => console.log('Déconnecté');
+    this.client.open();
   }
 }
