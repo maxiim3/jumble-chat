@@ -1,15 +1,23 @@
 import type { ServerWebSocket } from '../shared/socket.type';
 import type { SocketMessageModel } from '../shared/socket-message.model';
 import { PORT, ROUTES } from '../shared/constants';
+import { generateUsername } from 'friendly-username-generator';
 
 const clients = new Set<ServerWebSocket<WebSocketData>>();
+const ids = new Set<string>();
 
 const server = Bun.serve<WebSocketData>({
   port: PORT,
   routes: {
     [ROUTES.health]: new Response('OK'),
     [ROUTES.ws]: (req) => {
-      const userId = crypto.randomUUID();
+      let userId = generateUsername();
+
+      while (ids.has(userId)) {
+        userId = generateUsername();
+      }
+
+      ids.add(userId); // Reserve immediately to prevent race condition
 
       const upgraded = server.upgrade(req, {
         data: {
@@ -19,6 +27,7 @@ const server = Bun.serve<WebSocketData>({
       });
 
       if (!upgraded) {
+        ids.delete(userId); // Release the reserved ID
         return new Response('WebSocket upgrade failed', { status: 400 });
       }
       // Si upgrade réussi, Bun gère automatiquement la réponse
@@ -77,6 +86,8 @@ const server = Bun.serve<WebSocketData>({
 
     close(ws) {
       clients.delete(ws);
+      ids.delete(ws.data.userId);
+
       console.log(`Client déconnecté: ${ws.data.userId} (${clients.size} clients restants)`);
 
       clients.forEach((client) => {
