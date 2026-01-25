@@ -23,14 +23,20 @@ export class SocketClientService {
           case 'new_message':
             this.messages.set([...this.messages(), data]);
             break;
-          case 'new_connection':
+          case 'new_connection': {
+            if (this.userId() && data.userId !== this.userId()) break;
+
             this.userId.set(data.userId);
             this.countUsers.set(data.count);
             this.messages.set([...this.messages(), data]);
             break;
-          case 'user_count':
+          }
+
+          case 'user_joined':
+          case 'user_left':
             this.countUsers.set(data.count);
             this.messages.set([...this.messages(), data]);
+            break;
         }
       };
       this.ws.onclose = () => console.log('Déconnecté');

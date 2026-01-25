@@ -1,11 +1,11 @@
-import { Component, DestroyRef, signal } from '@angular/core';
-// import { RouterOutlet } from '@angular/router';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { SocketClientService } from './services/socket-client.service';
-import { inject } from '@angular/core';
+import { Post } from './ui/post/post';
+import { CreatePost } from './ui/create-post/create-post';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [Post, CreatePost],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

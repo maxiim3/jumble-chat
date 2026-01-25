@@ -1,7 +1,7 @@
-import type { ServerWebSocket } from '../shared/socket.type';
-import type { SocketMessageModel } from '../shared/socket-message.model';
+import type { SocketMessageModel, WebSocketData } from '../shared/socket-message.model';
 import { PORT, ROUTES } from '../shared/constants';
 import { generateUsername } from 'friendly-username-generator';
+import { Server, ServerWebSocket } from 'bun';
 
 const clients = new Set<ServerWebSocket<WebSocketData>>();
 const ids = new Set<string>();
@@ -54,12 +54,12 @@ const server = Bun.serve<WebSocketData>({
       ws.send(JSON.stringify(notification_to_user));
 
       clients.forEach((client) => {
-        if (client.userId === client_id) return;
+        if (client.data.userId === client_id) return;
 
         const notify_others: SocketMessageModel = {
-          type: 'user_count',
+          type: 'user_joined',
           messageId: crypto.randomUUID(),
-          userId: client.userId,
+          userId: client_id,
           timestamp: Date.now(),
           message: `${client_id} joined - (${clients.size} clients total)`,
           count: clients.size,
@@ -92,9 +92,9 @@ const server = Bun.serve<WebSocketData>({
 
       clients.forEach((client) => {
         const notify_others: SocketMessageModel = {
-          type: 'user_count',
+          type: 'user_left',
           messageId: crypto.randomUUID(),
-          userId: client.userId,
+          userId: ws.data.userId,
           timestamp: Date.now(),
           message: `${ws.data.userId} left the chat - (${clients.size} clients total)`,
           count: clients.size,

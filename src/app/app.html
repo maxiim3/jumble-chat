@@ -6,9 +6,9 @@
   </aside>
   <div class="border border-green-500 w-lg h-full flex gap-12 flex-col justify-end items-stretch">
     @for (message of client.messages(); track message.messageId) {
-      <article class="w-full p-3 border-slate-100 border">{{message.message}}</article>
+      <app-post [message]="message" [currentUserId]="client.userId()" />
     }
-    <button (click)="client.send(`test - coucou user ${client.userId()}`)">Send</button>
+    <app-create-post />
     @if (client.userId()) {
       <p>{{client.userId()}} is connected</p>
     }

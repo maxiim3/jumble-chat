@@ -1,0 +1,18 @@
+<form class="flex gap-2 items-center w-full p-2" (ngSubmit)="onSubmit()">
+  <label for="message-input" class="sr-only">Message</label>
+  <input
+    id="message-input"
+    type="text"
+    [formControl]="messageControl"
+    (keydown)="onKeydown($event)"
+    placeholder="Type a message..."
+    class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+  />
+  <button
+    type="submit"
+    [disabled]="messageControl.invalid"
+    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+  >
+    Send
+  </button>
+</form>

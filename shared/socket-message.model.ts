@@ -1,4 +1,4 @@
-export type MessageType = 'new_connection' | 'user_count' | 'new_message';
+export type MessageType = 'new_connection' | 'user_joined' | 'user_left' | 'new_message';
 
 export interface SocketMessageModel {
   type: MessageType;
@@ -7,4 +7,10 @@ export interface SocketMessageModel {
   userId: string;
   timestamp: number;
   count: number;
+}
+
+// Types pour les données associées à chaque WebSocket
+export interface WebSocketData {
+  userId: string;
+  createdAt: number;
 }
