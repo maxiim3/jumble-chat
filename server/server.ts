@@ -1,18 +1,13 @@
 import type { ServerWebSocket } from '../shared/socket.type';
+import type { SocketMessageModel } from '../shared/socket-message.model';
 import { PORT, ROUTES } from '../shared/constants';
 
-// Set pour garder trace de tous les clients connectés
 const clients = new Set<ServerWebSocket<WebSocketData>>();
 
 const server = Bun.serve<WebSocketData>({
   port: PORT,
-
-  // Routes HTTP
   routes: {
-    // Health check endpoint
     [ROUTES.health]: new Response('OK'),
-
-    // Upgrade vers WebSocket sur /ws
     [ROUTES.ws]: (req) => {
       const userId = crypto.randomUUID();
 
@@ -22,39 +17,80 @@ const server = Bun.serve<WebSocketData>({
           createdAt: Date.now(),
         },
       });
+
       if (!upgraded) {
         return new Response('WebSocket upgrade failed', { status: 400 });
       }
       // Si upgrade réussi, Bun gère automatiquement la réponse
     },
   },
-
-  // Configuration WebSocket
   websocket: {
     open(ws) {
       clients.add(ws);
-      console.log(`Client connecté: ${ws.data.userId} (${clients.size} clients total)`);
+
+      const client_id = ws.data.userId;
+
+      console.log(`Client connecté: ${client_id} (${clients.size} clients total)`);
 
       // Envoyer un message de bienvenue
-      ws.send(
-        JSON.stringify({
-          type: 'connected',
-          userId: ws.data.userId,
+      const notification_to_user: SocketMessageModel = {
+        type: 'new_connection',
+        messageId: crypto.randomUUID(),
+        userId: client_id,
+        timestamp: Date.now(),
+        message: `Client connecté: ${ws.data.userId} (${clients.size} clients total)`,
+        count: clients.size,
+      };
+
+      ws.send(JSON.stringify(notification_to_user));
+
+      clients.forEach((client) => {
+        if (client.userId === client_id) return;
+
+        const notify_others: SocketMessageModel = {
+          type: 'user_count',
+          messageId: crypto.randomUUID(),
+          userId: client.userId,
           timestamp: Date.now(),
-        }),
-      );
+          message: `${client_id} joined - (${clients.size} clients total)`,
+          count: clients.size,
+        };
+
+        client.send(JSON.stringify(notify_others));
+      });
     },
 
-    message(ws, message) {
-      // TODO(human): Implémenter la logique de traitement des messages
-      // Le message peut être du texte ou un Buffer
-      // Voir les instructions ci-dessous pour les différents types à gérer
-      console.log(message);
+    message(ws, message: string) {
+      clients.forEach((client) => {
+        const msg: SocketMessageModel = {
+          type: 'new_message',
+          messageId: crypto.randomUUID(),
+          userId: ws.data.userId,
+          timestamp: Date.now(),
+          message: message,
+          count: clients.size,
+        };
+
+        client.send(JSON.stringify(msg));
+      });
     },
 
     close(ws) {
       clients.delete(ws);
       console.log(`Client déconnecté: ${ws.data.userId} (${clients.size} clients restants)`);
+
+      clients.forEach((client) => {
+        const notify_others: SocketMessageModel = {
+          type: 'user_count',
+          messageId: crypto.randomUUID(),
+          userId: client.userId,
+          timestamp: Date.now(),
+          message: `${ws.data.userId} left the chat - (${clients.size} clients total)`,
+          count: clients.size,
+        };
+
+        client.send(JSON.stringify(notify_others));
+      });
     },
   },
 });

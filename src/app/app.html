@@ -1,12 +1,16 @@
-<main class="w-screen h-screen flex flex-col items-center">
+<main class="w-screen h-screen flex flex-col items-center relative">
+  <aside class="fixed top-12 left-12 border border-slate-100 rounded-lg p-8">
+    @if (client.userId()) {
+      <span>Online : {{client.countUsers()}}</span>
+    }
+  </aside>
   <div class="border border-green-500 w-lg h-full flex gap-12 flex-col justify-end items-stretch">
-    <article class="w-full p-3 border-slate-100 border">Coucou</article>
-    <article class="w-full p-3 border-slate-100 border">Coucou</article>
-    <button (click)="client.send('test - coucou')">Send</button>
-    @if (userId()) {
-      <p>
-        {{userId()}} is connected
-      </p>
+    @for (message of client.messages(); track message.messageId) {
+      <article class="w-full p-3 border-slate-100 border">{{message.message}}</article>
+    }
+    <button (click)="client.send(`test - coucou user ${client.userId()}`)">Send</button>
+    @if (client.userId()) {
+      <p>{{client.userId()}} is connected</p>
     }
   </div>
 </main>
