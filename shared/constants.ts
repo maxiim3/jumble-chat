@@ -1,4 +1,4 @@
-export const PORT = 3200 as const;
+// Routes partagées frontend/backend
 export const ROUTES = {
   health: '/health',
   ws: '/ws',

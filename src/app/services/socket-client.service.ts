@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
-import { PORT, ROUTES } from '../../../shared/constants';
+import { ROUTES } from '../../../shared/constants';
 import { SocketMessageModel } from '../../../shared/socket-message.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,8 @@ export class SocketClientService {
 
   open() {
     if (!this.ws) {
-      this.ws = new WebSocket(`ws://localhost:${PORT}${ROUTES.ws}`);
+      const wsUrl = environment.wsUrl + ROUTES.ws;
+      this.ws = new WebSocket(wsUrl);
       this.ws.onopen = (event) => console.log('Connecté', event);
       this.ws.onmessage = (e: MessageEvent<string>) => {
         const data: SocketMessageModel = JSON.parse(e.data);

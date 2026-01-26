@@ -1,23 +1,39 @@
 import type { SocketMessageModel, WebSocketData } from '../shared/socket-message.model';
-import { PORT, ROUTES } from '../shared/constants';
+import { ROUTES } from '../shared/constants';
 import { generateUsername } from 'friendly-username-generator';
-import { Server, ServerWebSocket } from 'bun';
+import type { ServerWebSocket } from 'bun';
+import { join } from 'path';
+
+// Railway injecte PORT automatiquement
+const PORT = Number(process.env['PORT']) || 3200;
 
 const clients = new Set<ServerWebSocket<WebSocketData>>();
 const ids = new Set<string>();
 
+// Chemin vers le build Angular
+const STATIC_DIR = join(import.meta.dir, '../dist/jumble-chat/browser');
+
 const server = Bun.serve<WebSocketData>({
   port: PORT,
-  routes: {
-    [ROUTES.health]: new Response('OK'),
-    [ROUTES.ws]: (req) => {
+
+  // Servir les fichiers statiques Angular + API
+  async fetch(req) {
+    const url = new URL(req.url);
+
+    // Health check
+    if (url.pathname === ROUTES.health) {
+      return new Response('OK');
+    }
+
+    // WebSocket upgrade
+    if (url.pathname === ROUTES.ws) {
       let userId = generateUsername();
 
       while (ids.has(userId)) {
         userId = generateUsername();
       }
 
-      ids.add(userId); // Reserve immediately to prevent race condition
+      ids.add(userId);
 
       const upgraded = server.upgrade(req, {
         data: {
@@ -27,12 +43,30 @@ const server = Bun.serve<WebSocketData>({
       });
 
       if (!upgraded) {
-        ids.delete(userId); // Release the reserved ID
+        ids.delete(userId);
         return new Response('WebSocket upgrade failed', { status: 400 });
       }
-      // Si upgrade réussi, Bun gère automatiquement la réponse
-    },
+
+      return undefined;
+    }
+
+    // Servir les fichiers statiques
+    const filePath = join(STATIC_DIR, url.pathname === '/' ? 'index.html' : url.pathname);
+    const file = Bun.file(filePath);
+
+    if (await file.exists()) {
+      return new Response(file);
+    }
+
+    // SPA fallback - renvoyer index.html pour le routing Angular
+    const indexFile = Bun.file(join(STATIC_DIR, 'index.html'));
+    if (await indexFile.exists()) {
+      return new Response(indexFile);
+    }
+
+    return new Response('Not Found', { status: 404 });
   },
+
   websocket: {
     open(ws) {
       clients.add(ws);
@@ -41,7 +75,6 @@ const server = Bun.serve<WebSocketData>({
 
       console.log(`Client connecté: ${client_id} (${clients.size} clients total)`);
 
-      // Envoyer un message de bienvenue
       const notification_to_user: SocketMessageModel = {
         type: 'new_connection',
         messageId: crypto.randomUUID(),
@@ -106,4 +139,5 @@ const server = Bun.serve<WebSocketData>({
   },
 });
 
-console.log(`🚀 Serveur WebSocket démarré sur ws://localhost:${server.port}/ws`);
+console.log(`🚀 Serveur démarré sur http://localhost:${server.port}`);
+console.log(`   WebSocket: ws://localhost:${server.port}${ROUTES.ws}`);
