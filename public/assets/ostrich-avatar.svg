@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Autruche</title>
+  <desc id="desc">Avatar d'autruche stylise pour les sessions anonymes.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#dcfce7" />
+      <stop offset="100%" stop-color="#bfdbfe" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="url(#sky)" />
+  <circle cx="66" cy="76" r="28" fill="#111827" />
+  <path d="M72 32c-10 0-18 8-18 18v16h20V50c0-4 4-8 8-8s8 4 8 8v14h12V50c0-10-9-18-20-18h-10Z" fill="#f9fafb" />
+  <path d="M82 42c4 0 8 4 8 8v32H74V50c0-4 4-8 8-8Z" fill="#111827" />
+  <circle cx="84" cy="50" r="4" fill="#f9fafb" />
+  <path d="M92 60c10 2 18 9 22 19-9 1-19-1-28-8l6-11Z" fill="#f59e0b" />
+  <path d="M44 88c8 10 18 16 30 18-1 5-4 10-8 14H32c1-13 5-24 12-32Z" fill="#166534" opacity="0.15" />
+  <path d="M50 78c0-10 8-18 18-18h8c10 0 18 8 18 18v6H50v-6Z" fill="#f9fafb" />
+  <circle cx="60" cy="76" r="4" fill="#111827" />
+  <circle cx="82" cy="76" r="4" fill="#111827" />
+  <path d="M64 90c5 4 11 4 16 0" fill="none" stroke="#111827" stroke-linecap="round" stroke-width="4" />
+</svg>

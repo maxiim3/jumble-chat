@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { SocketMessageModel } from '../../../../shared/socket-message.model';
+import { DEFAULT_AVATAR_URL } from '../../services/avatar.constants';
 import { MessageFormatterService } from '../../services/message-formatter.service';
 
 @Component({
@@ -11,20 +12,18 @@ import { MessageFormatterService } from '../../services/message-formatter.servic
 })
 export class Post {
   private readonly formatter = inject(MessageFormatterService);
+  protected readonly fallbackAvatarUrl = DEFAULT_AVATAR_URL;
 
   /** The message to display */
   message = input.required<SocketMessageModel>();
 
-  /** Current user ID to identify own messages */
-  currentUserId = input<string | undefined>();
+  /** Current session ID to identify own messages */
+  currentSessionId = input<string | undefined>();
 
   /** Whether this message was sent by the current user */
   isOwnMessage = computed(() =>
-    this.formatter.isCurrentUser(this.message().userId, this.currentUserId())
+    this.formatter.isCurrentUser(this.message().author.sessionId, this.currentSessionId())
   );
-
-  /** CSS class based on message type */
-  colorClass = computed(() => this.formatter.getColorClass(this.message().type));
 
   /** Container class based on message type and ownership */
   containerClass = computed(() =>
@@ -33,6 +32,19 @@ export class Post {
 
   /** Formatted sender name (shows "You" for own messages) */
   formattedSender = computed(() =>
-    this.formatter.formatSender(this.message().userId, this.currentUserId())
+    this.formatter.formatSender(this.message().author, this.currentSessionId())
   );
+
+  senderClass = computed(() =>
+    this.isOwnMessage() ? 'text-xs font-medium text-emerald-100' : 'text-xs font-medium text-slate-500'
+  );
+
+  onAvatarError(event: Event): void {
+    const image = event.target;
+
+    if (image instanceof HTMLImageElement) {
+      image.onerror = null;
+      image.src = this.fallbackAvatarUrl;
+    }
+  }
 }

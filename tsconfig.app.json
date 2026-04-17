@@ -6,6 +6,6 @@
     "outDir": "./out-tsc/app",
     "types": [],
   },
-  "include": ["src/**/*.ts", "shared/socket-message.model.ts"],
+  "include": ["src/**/*.ts", "shared/**/*.ts"],
   "exclude": ["src/**/*.spec.ts"],
 }

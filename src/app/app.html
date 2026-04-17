@@ -1,34 +1,118 @@
-<main class="w-screen h-screen flex bg-gradient-to-br from-slate-50 to-slate-100">
-  <!-- Sidebar with glass effect -->
-  <aside class="fixed top-6 left-6 backdrop-blur-sm bg-white/90 border border-slate-200/50 rounded-2xl p-5 shadow-lg z-10">
-    @if (client.userId()) {
+@if (session.isReady() && session.profile(); as profile) {
+  <main class="w-screen h-screen flex bg-gradient-to-br from-slate-50 to-slate-100">
+    <aside class="fixed top-6 left-6 z-10 flex max-w-xs flex-col gap-4 rounded-2xl border border-slate-200/50 bg-white/90 p-5 shadow-lg backdrop-blur-sm">
+      <div class="flex items-center gap-3">
+        <img
+          [src]="profile.avatarUrl"
+          [alt]="profile.displayName"
+          width="48"
+          height="48"
+          class="h-12 w-12 rounded-full border border-slate-200 object-cover bg-white"
+          (error)="onAvatarError($event)"
+        />
+
+        <div class="min-w-0">
+          <p class="truncate text-sm font-semibold text-slate-900">{{ profile.displayName }}</p>
+          <p class="text-xs text-slate-500">
+            @if (profile.authMode === 'nostr') {
+              Connected with Nostr
+            } @else {
+              Anonymous session
+            }
+          </p>
+        </div>
+      </div>
+
       <div class="flex items-center gap-3">
         <div class="relative">
-          <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
-          <div class="absolute inset-0 w-3 h-3 bg-emerald-500 rounded-full animate-ping opacity-75"></div>
+          <div class="h-3 w-3 rounded-full bg-emerald-500"></div>
+          <div class="absolute inset-0 h-3 w-3 rounded-full bg-emerald-500 opacity-75 animate-ping"></div>
         </div>
         <span class="text-sm font-medium text-slate-700">{{ client.countUsers() }} online</span>
       </div>
-    }
-  </aside>
+    </aside>
 
-  <!-- Main chat container -->
-  <div class="flex-1 flex flex-col max-w-2xl mx-auto w-full h-full py-6 px-4">
-    <!-- Messages area -->
-    <div class="flex-1 overflow-y-auto flex flex-col gap-3 py-4 px-2">
-      @for (message of client.messages(); track message.messageId) {
-        <app-post [message]="message" [currentUserId]="client.userId()" />
+    <div class="flex-1 flex flex-col max-w-2xl mx-auto w-full h-full py-6 px-4">
+      <div class="flex-1 overflow-y-auto flex flex-col gap-3 py-4 px-2">
+        @for (message of client.messages(); track message.messageId) {
+          <app-post [message]="message" [currentSessionId]="profile.sessionId" />
+        }
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200/50">
+        <app-create-post />
+      </div>
+
+      <p class="text-center text-xs text-slate-400 mt-3">Connected as {{ profile.displayName }}</p>
+    </div>
+  </main>
+} @else {
+  <main class="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,_rgb(16_185_129_/_0.18),_transparent_42%),linear-gradient(135deg,_rgb(248_250_252),_rgb(226_232_240))] px-4 py-8">
+    <section
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="entry-title"
+      aria-describedby="entry-description"
+      class="w-full max-w-md rounded-3xl border border-white/70 bg-white/95 p-8 shadow-2xl backdrop-blur"
+    >
+      <div class="space-y-3">
+        <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
+          Jumble Chat
+        </span>
+
+        <h1 id="entry-title" class="text-3xl font-semibold tracking-tight text-slate-950">
+          Choisir une identité
+        </h1>
+
+        <p id="entry-description" class="text-sm leading-6 text-slate-600">
+          Le chat s’ouvre uniquement quand votre session est prête. Vous pouvez entrer anonymement ou connecter votre identité Nostr.
+        </p>
+      </div>
+
+      @if (session.error()) {
+        <p role="alert" class="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {{ session.error() }}
+        </p>
       }
-    </div>
 
-    <!-- Input area card -->
-    <div class="bg-white rounded-2xl shadow-lg border border-slate-200/50">
-      <app-create-post />
-    </div>
+      <div class="mt-6 grid gap-3">
+        <button
+          type="button"
+          autofocus
+          [disabled]="session.isBusy()"
+          (click)="session.joinAnonymously()"
+          class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-4 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          @if (session.isConnectingGuest()) {
+            Connexion anonyme...
+          } @else {
+            Rejoindre anonymement
+          }
+        </button>
 
-    <!-- Connection status -->
-    @if (client.userId()) {
-      <p class="text-center text-xs text-slate-400 mt-3">Connected as {{ client.userId() }}</p>
-    }
-  </div>
-</main>
+        <button
+          type="button"
+          [disabled]="session.isBusy()"
+          (click)="session.connectWithNostr()"
+          class="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          @if (session.isConnectingNostr()) {
+            Connexion Nostr...
+          } @else {
+            Se connecter avec Nostr
+          }
+        </button>
+      </div>
+
+      <p aria-live="polite" class="mt-4 text-sm text-slate-500">
+        @if (session.isConnectingGuest()) {
+          Préparation de votre session anonyme...
+        } @else if (session.isConnectingNostr()) {
+          Validation de votre identité Nostr...
+        } @else {
+          Si Nostr échoue, vous pourrez toujours rejoindre le chat anonymement.
+        }
+      </p>
+    </section>
+  </main>
+}
